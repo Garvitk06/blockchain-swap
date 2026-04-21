@@ -6,9 +6,9 @@
     "frontend"
   ],
   "scripts": {
-    "dev": "npm run dev --workspace=blockchain-swap-frontend",
-    "build": "npm run build --workspace=blockchain-swap-frontend",
-    "start": "npm run start --workspace=blockchain-swap-frontend",
-    "lint": "npm run lint --workspace=blockchain-swap-frontend"
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
+    "start": "npm run start --workspace=frontend",
+    "lint": "npm run lint --workspace=frontend"
   }
 }
