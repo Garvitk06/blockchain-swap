@@ -31,6 +31,11 @@ Blockchain Swap is an institutional-grade Decentralized Exchange (DEX) protocol 
 |:---:|:---:|
 | ![Trading Dashboard](screenshots/dashboard.png) | ![Admin Hub](screenshots/admin_hub.png) |
 
+## 📺 Demo Video
+
+https://github.com/Garvitk06/blockchain-swap/raw/main/videos/demo.mov
+
+
 ## 🏗️ Technical Architecture
 
 Blockchain Swap utilizes a hub-and-spoke execution model where the **Router** contract orchestrates interactions between standard tokens and liquidity reserves.
