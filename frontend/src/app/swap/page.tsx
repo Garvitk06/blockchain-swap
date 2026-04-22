@@ -48,8 +48,10 @@ export default function SwapPage() {
     const timer = setTimeout(async () => {
       if (sellAmount && parseFloat(sellAmount) > 0) {
          setIsQuoting(true);
-         const amountInScaled = (parseFloat(sellAmount) * 10000000).toString();
-         const quote = await getSwapQuote(sellToken.id, amountInScaled, buyToken.id);
+          const [whole = "0", frac = ""] = sellAmount.split(".");
+          const paddedFrac = (frac + "0000000").slice(0, 7);
+          const amountInScaled = (BigInt(whole) * BigInt(10000000) + BigInt(paddedFrac)).toString();
+          const quote = await getSwapQuote(sellToken.id, amountInScaled, buyToken.id);
          
          if (quote) {
             setBuyAmount(parseFloat(quote).toFixed(4));
@@ -104,9 +106,26 @@ export default function SwapPage() {
       return;
     }
 
-    const minOut = (parseFloat(buyAmount) * (1 - slippage / 100)).toFixed(7).replace(/\.?0+$/, "");
-    const amountIn = (parseFloat(sellAmount) * 10000000).toString();
-    const minOutScaled = (parseFloat(minOut) * 10000000).toString();
+    // Validate amounts before proceeding
+    if (!sellAmount || parseFloat(sellAmount) <= 0) {
+      toast.error("Please enter a valid sell amount.");
+      return;
+    }
+    if (!buyAmount || parseFloat(buyAmount) <= 0) {
+      toast.error("No quote available. Market may have no liquidity — try seeding DEX from Admin Hub.");
+      return;
+    }
+
+    // Scale decimal strings to 7-decimal-place integers without floating point errors
+    const scaleToStroops = (decimalStr: string): string => {
+      const [whole = "0", frac = ""] = decimalStr.split(".");
+      const paddedFrac = (frac + "0000000").slice(0, 7);
+      return (BigInt(whole) * BigInt(10000000) + BigInt(paddedFrac)).toString();
+    };
+
+    const minOutDecimal = (parseFloat(buyAmount) * (1 - slippage / 100)).toFixed(7);
+    const amountIn = scaleToStroops(sellAmount);
+    const minOutScaled = scaleToStroops(minOutDecimal);
 
     try {
       await executeSwap(address, sellToken.id, amountIn, minOutScaled);

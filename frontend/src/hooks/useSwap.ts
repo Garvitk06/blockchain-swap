@@ -24,7 +24,9 @@ export const useSwap = () => {
 
     try {
       // 1. Classic DEX Fallback (Blockchain Traditional DEX)
-      if (!CONTRACT_IDS.router || CONTRACT_IDS.router.includes("...") || !CONTRACT_IDS.router.startsWith("C")) {
+      const isRouterReady = CONTRACT_IDS.router && CONTRACT_IDS.router.length === 56 && CONTRACT_IDS.router.startsWith("C") && !CONTRACT_IDS.router.includes("...");
+      const isPoolReady = CONTRACT_IDS.pool && CONTRACT_IDS.pool.length === 56 && CONTRACT_IDS.pool.startsWith("C") && !CONTRACT_IDS.pool.includes("...");
+      if (!isRouterReady || !isPoolReady) {
         console.log("Using Classic DEX Path Payment fallback...");
         
         const account = await horizonServer.loadAccount(userAddress);
@@ -35,8 +37,15 @@ export const useSwap = () => {
         const decAmountIn = (BigInt(amountIn).toString().padStart(8, '0'));
         const formattedIn = decAmountIn.slice(0, -7) + "." + decAmountIn.slice(-7);
         
-        const decMinOut = (BigInt(minOut).toString().padStart(8, '0'));
+        // Ensure minOut is at least 1 stroop (0.0000001) — destMin=0 causes op_malformed
+        const minOutBigInt = BigInt(minOut) > 0n ? BigInt(minOut) : 1n;
+        const decMinOut = (minOutBigInt.toString().padStart(8, '0'));
         const formattedOut = decMinOut.slice(0, -7) + "." + decMinOut.slice(-7);
+
+        console.log("[SWAP DEBUG] tokenIn:", tokenIn, "| amountIn (raw):", amountIn, "| minOut (raw):", minOut);
+        console.log("[SWAP DEBUG] formattedIn:", formattedIn, "| formattedOut:", formattedOut);
+        console.log("[SWAP DEBUG] assetIn:", assetIn.isNative() ? "XLM (native)" : `${assetIn.getCode()}:${assetIn.getIssuer()}`);
+        console.log("[SWAP DEBUG] assetOut:", assetOut.isNative() ? "XLM (native)" : `${assetOut.getCode()}:${assetOut.getIssuer()}`);
 
         const txBuilder = new TransactionBuilder(account, {
           fee: "1000",
